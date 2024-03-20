@@ -6,14 +6,9 @@ const questions = store.questions
 
 <template>
   <main class="w-full">
-    <div class="sticky top-0 bg-gray-100 py-2 flex justify-center">
+    <div class="sticky top-0 bg-gray-100 py-2 flex gap-2 justify-center">
       <CustomButton text="KEMBALI" type="secondary" @click="this.$router.back()" />
       <CustomButton text="60:00" type="danger" />
-      <CustomButton
-        text="LIST SOAL"
-        type="warning"
-        @click="this.$router.push({ name: 'list-question' })"
-      />
       <CustomButton text="SELANJUTNYA" @click="this.$router.push({ name: 'confirmation' })" />
     </div>
     <div class="flex-col gap-5 flex">
