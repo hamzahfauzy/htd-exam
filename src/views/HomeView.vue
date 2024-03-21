@@ -1,9 +1,11 @@
 <script setup>
 import axios from 'axios'
 import CustomButton from '../components/CustomButton.vue'
+import CustomModal from '../components/CustomModal.vue'
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import CustomLoading from '@/components/CustomLoading.vue'
+import CustomAlert from '@/components/CustomAlert.vue'
 const currentDate = new Date()
 const weekday = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 const month = [
@@ -27,12 +29,13 @@ const user = ref()
 const schedules = ref()
 const loading = ref(true)
 const search = ref('')
+const showModalScheduleToken = ref(false)
+const selectedSchedule = ref()
+const scheduleToken = ref('')
+const isScheduleTokenValid = ref(false)
+const isScheduleTokenSubmitted = ref(false)
 
 onMounted(async () => {
-  if (!token.value) {
-    router.replace({ name: 'login' })
-  }
-
   await getUser()
   await getSchedule()
   loading.value = false
@@ -96,25 +99,87 @@ function formatTime(start_at, end_at) {
   return `${addZero(start.getHours())}:${addZero(start.getMinutes())} - ${addZero(end.getHours())}:${addZero(end.getMinutes())}`
 }
 
-function isStarted(start_at) {
-  const start = new Date(start_at)
-  return start <= currentDate
+function getButtonTypeAction(label) {
+  switch (label) {
+    case 'Kerjakan':
+      return 'primary'
+    case 'Hasil':
+      return 'success'
+
+    default:
+      return 'secondary'
+  }
 }
 
-function isEnded(end_at) {
-  const end = new Date(end_at)
-  return end <= currentDate
+function routeButtonAction(schedule, label) {
+  switch (label) {
+    case 'Kerjakan':
+      selectedSchedule.value = schedule
+      showModalScheduleToken.value = true
+      break
+    case 'Hasil':
+      router.push({ name: 'result', params: { id: schedule.id } })
+      break
+    default:
+      break
+  }
 }
 
 function logout() {
   localStorage.removeItem('token')
   router.replace({ name: 'login' })
 }
+
+function closeModalScheduleToken() {
+  isScheduleTokenSubmitted.value = false
+  isScheduleTokenValid.value = false
+  selectedSchedule.value = null
+  scheduleToken.value = ''
+  showModalScheduleToken.value = false
+}
+
+function handleSubmitScheduleToken() {
+  if (selectedSchedule.value.token === scheduleToken.value) {
+    isScheduleTokenSubmitted.value = true
+    isScheduleTokenValid.value = true
+    router.push({ name: 'question', params: { id: selectedSchedule.value.id } })
+  } else {
+    isScheduleTokenSubmitted.value = true
+    isScheduleTokenValid.value = false
+  }
+}
 </script>
 
 <template>
   <CustomLoading v-if="loading" />
-  <main v-else class="text-center w-full flex-col gap-5 flex pt-5">
+  <CustomModal v-else-if="!loading && showModalScheduleToken">
+    <div class="flex flex-col gap-4">
+      <CustomAlert
+        v-if="isScheduleTokenSubmitted && !isScheduleTokenValid"
+        text="Token yang anda masukkan tidak sesuai!"
+        type="danger"
+      />
+      <div>
+        <label for="token" class="block mb-2 text-sm font-medium">Masukkan Token</label>
+        <input
+          v-model="scheduleToken"
+          type="token"
+          id="token"
+          name="token"
+          placeholder="Masukkan Token..."
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+        />
+      </div>
+      <div class="flex gap-3 justify-end">
+        <CustomButton text="KEMBALI" type="danger" @click="closeModalScheduleToken" />
+        <CustomButton text="SUBMIT" @click="handleSubmitScheduleToken" />
+      </div>
+    </div>
+  </CustomModal>
+  <main
+    v-else-if="!loading && !showModalScheduleToken"
+    class="text-center w-full flex-col gap-5 flex p-5"
+  >
     <div>
       <h5 class="text-xl">Halo, {{ user.name }}</h5>
       <h3>{{ formatDate(currentDate) }}</h3>
@@ -169,11 +234,14 @@ function logout() {
         <h3>{{ formatDate(new Date(schedule.start_at)) }}</h3>
         <h5 class="text-lg font-bold">{{ formatTime(schedule.start_at, schedule.end_at) }}</h5>
       </div>
-      <div v-if="!isEnded(schedule.end_at)" class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1">
         <CustomButton
-          :text="isStarted(schedule.start_at) ? 'LANJUTKAN' : 'MULAI'"
-          :type="isStarted(schedule.start_at) ? 'success' : 'primary'"
-          @click="this.$router.push({ name: 'question' })"
+          v-for="(action, index) in schedule.actions"
+          :key="index"
+          :text="action.label"
+          :disabled="!action.route"
+          :type="getButtonTypeAction(action.label)"
+          @click="routeButtonAction(schedule, action.label)"
         />
       </div>
     </div>
