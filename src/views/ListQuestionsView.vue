@@ -1,8 +1,10 @@
 <script setup>
 import CustomButton from '../components/CustomButton.vue'
 import { store } from '@/store/index'
+import { useRouter } from 'vue-router'
 
 const questions = store.questions
+const router = useRouter()
 </script>
 
 <template>
@@ -12,7 +14,7 @@ const questions = store.questions
       <span
         v-for="(question, idx) in questions"
         :key="idx"
-        @click="this.$router.push({ name: 'question', hash: '#question-' + question.id })"
+        @click="router.push({ name: 'question', hash: '#question-' + question.id })"
         :class="[
           'cursor-pointer w-10 h-10 flex items-center justify-center rounded',
           question.selectedAnswer.length
@@ -23,7 +25,7 @@ const questions = store.questions
       >
     </div>
     <div>
-      <CustomButton text="KEMBALI" type="secondary" @click="this.$router.back()" />
+      <CustomButton text="KEMBALI" type="secondary" @click="router.back()" />
     </div>
   </main>
 </template>
