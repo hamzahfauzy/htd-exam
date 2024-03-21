@@ -18,18 +18,36 @@ const timerHours = ref('00')
 const timerMinutes = ref('00')
 const timerSeconds = ref('00')
 const showModal = ref(false)
+const user = ref()
 
 onMounted(async () => {
   await getQuestions()
+  await getUser()
 
   loading.value = false
 })
+
+async function getUser() {
+  try {
+    const { data } = await axios.get(import.meta.env.VITE_API_URL + '/auth/get-user', {
+      headers: {
+        Authorization: 'Bearer ' + token.value
+      }
+    })
+    user.value = data.data
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 function isSavedAnswer(question, answer) {
   return (
     savedAnswers.value.findIndex(
       (data) =>
-        data.question == question.id && data.answer == answer.id && data.schedule == route.params.id
+        data.question == question.id &&
+        data.answer == answer.id &&
+        data.schedule == route.params.id &&
+        data.user == user.value.username
     ) > -1
   )
 }
@@ -94,17 +112,17 @@ async function getQuestions() {
 
 function answerQuestion(question, answer) {
   const foundIndex = savedAnswers.value.findIndex(
-    (data) => data.question == question.id && data.schedule == route.params.id
+    (data) =>
+      data.question == question.id &&
+      data.schedule == route.params.id &&
+      data.user == user.value.username
   )
 
   if (foundIndex > -1) {
-    savedAnswers.value[foundIndex] = {
-      schedule: route.params.id,
-      question: question.id,
-      answer: answer.id
-    }
+    savedAnswers.value[foundIndex] = { ...savedAnswers.value[foundIndex], answer: answer.id }
   } else {
     savedAnswers.value.push({
+      user: user.value.username,
       schedule: route.params.id,
       question: question.id,
       answer: answer.id
@@ -141,7 +159,11 @@ async function handleSubmitExam() {
 
     localStorage.setItem(
       'savedAnswers',
-      JSON.stringify(savedAnswers.value.filter((data) => data.schedule != route.params.id))
+      JSON.stringify(
+        savedAnswers.value.filter(
+          (data) => data.schedule != route.params.id && data.user == user.value.username
+        )
+      )
     )
 
     router.replace({ name: 'finish' })
