@@ -8,7 +8,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <main class="text-center w-full flex-col gap-5 flex">
+  <main class="text-center w-full flex-col gap-5 flex p-5">
     <h5 class="text-xl">List Soal</h5>
     <div class="flex gap-2 flex-wrap">
       <span

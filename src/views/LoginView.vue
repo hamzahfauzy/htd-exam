@@ -41,7 +41,7 @@ async function login() {
 </script>
 
 <template>
-  <form class="w-full flex-col gap-4 flex">
+  <form class="w-full flex-col gap-4 flex p-5">
     <h3 class="text-xl text-center font-bold">HTD Exam</h3>
     <CustomAlert v-if="isSubmited" :text="message" :type="status ? 'success' : 'danger'" />
     <div>

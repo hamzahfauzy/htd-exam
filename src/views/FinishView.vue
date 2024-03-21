@@ -6,7 +6,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <main class="text-center w-full flex-col gap-5 flex">
+  <main class="text-center w-full flex-col gap-5 flex p-5">
     <div class="flex flex-col gap-2">
       <h5 class="text-xl">Selamat!</h5>
       <p>Anda telah mengirimkan jawaban.</p>

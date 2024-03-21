@@ -37,7 +37,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <main class="text-center w-full flex-col gap-5 flex">
+  <main class="text-center w-full flex-col gap-5 flex p-5">
     <div class="flex flex-col gap-2">
       <h5 class="text-xl">Perhatian!</h5>
       <p>Apakah anda yakin ingin mengirimkan jawaban?</p>
