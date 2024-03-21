@@ -1,5 +1,8 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import CustomButton from '../components/CustomButton.vue'
+
+const router = useRouter()
 </script>
 
 <template>
@@ -9,7 +12,7 @@ import CustomButton from '../components/CustomButton.vue'
       <p>Anda telah mengirimkan jawaban.</p>
     </div>
     <div>
-      <CustomButton text="SELESAI" @click="this.$router.push({ name: 'home' })" />
+      <CustomButton text="SELESAI" @click="router.replace({ name: 'home' })" />
     </div>
   </main>
 </template>

@@ -1,5 +1,39 @@
 <script setup>
+import axios from 'axios'
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CustomButton from '../components/CustomButton.vue'
+
+const router = useRouter()
+const route = useRoute()
+const savedAnswers = ref(JSON.parse(localStorage.getItem('savedAnswers')) ?? [])
+const token = ref(localStorage.getItem('token'))
+
+async function handleSubmit() {
+  try {
+    const { data } = await axios.post(
+      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      savedAnswers.value.filter((data) => data.schedule == route.params.id),
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: 'Bearer ' + token.value
+        }
+      }
+    )
+
+    console.log(data)
+
+    localStorage.setItem(
+      'savedAnswer',
+      JSON.stringify(savedAnswers.value.filter((data) => data.schedule != route.params.id))
+    )
+
+    router.replace({ name: 'finish' })
+  } catch (e) {
+    console.error(e)
+  }
+}
 </script>
 
 <template>
@@ -8,9 +42,9 @@ import CustomButton from '../components/CustomButton.vue'
       <h5 class="text-xl">Perhatian!</h5>
       <p>Apakah anda yakin ingin mengirimkan jawaban?</p>
     </div>
-    <div>
-      <CustomButton text="KEMBALI" type="secondary" @click="this.$router.back()" />
-      <CustomButton text="KIRIM" type="success" @click="this.$router.push({ name: 'finish' })" />
+    <div class="flex gap-3 justify-center">
+      <CustomButton text="TIDAK" type="danger" @click="router.back()" />
+      <CustomButton text="YAKIN" type="success" @click="handleSubmit" />
     </div>
   </main>
 </template>
