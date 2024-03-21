@@ -5,6 +5,7 @@ import FinishView from '@/views/FinishView.vue'
 import ConfirmationView from '@/views/ConfirmationView.vue'
 import ListQuestionsView from '@/views/ListQuestionsView.vue'
 import LoginView from '@/views/LoginView.vue'
+import ResultView from '@/views/ResultView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,12 +31,17 @@ const router = createRouter({
       component: LoginView
     },
     {
-      path: '/question',
+      path: '/question/:id',
       name: 'question',
       component: QuestionView
     },
     {
-      path: '/confirmation',
+      path: '/result/:id',
+      name: 'result',
+      component: ResultView
+    },
+    {
+      path: '/confirmation/:id',
       name: 'confirmation',
       component: ConfirmationView
     },
@@ -50,6 +56,16 @@ const router = createRouter({
       component: ListQuestionsView
     }
   ]
+})
+
+router.beforeEach(async (to) => {
+  if (!localStorage.getItem('token') && to.name !== 'login') {
+    return { name: 'login' }
+  }
+
+  if (localStorage.getItem('token') && to.name == 'login') {
+    return { name: 'home' }
+  }
 })
 
 export default router

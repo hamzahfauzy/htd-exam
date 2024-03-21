@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import CustomButton from '../components/CustomButton.vue'
 import CustomAlert from '../components/CustomAlert.vue'
 import axios from 'axios'
@@ -11,12 +11,6 @@ const message = ref('')
 const status = ref(false)
 const isSubmited = ref(false)
 const router = useRouter()
-
-onMounted(() => {
-  if (localStorage.getItem('token')) {
-    router.replace({ name: 'home' })
-  }
-})
 
 async function login() {
   try {
