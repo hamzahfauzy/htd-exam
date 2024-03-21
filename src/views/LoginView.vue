@@ -42,28 +42,31 @@ async function login() {
 
 <template>
   <form class="w-full flex-col gap-4 flex p-5">
-    <h3 class="text-xl text-center font-bold">HTD Exam</h3>
+    <img src="../assets/logo.png" alt="" width="150" class="mx-auto" />
+    <h3 class="text-xl text-center font-bold">SMK Negeri 1 Pulau Rakyat</h3>
     <CustomAlert v-if="isSubmited" :text="message" :type="status ? 'success' : 'danger'" />
     <div>
-      <label for="username" class="block mb-2 text-sm font-medium">Username</label>
+      <label for="username" class="block mb-2 text-sm font-medium">Nama Pengguna</label>
       <input
         v-model="username"
         type="text"
         id="username"
         name="username"
+        placeholder="Masukkan nama pengguna..."
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       />
     </div>
     <div>
-      <label for="password" class="block mb-2 text-sm font-medium">Password</label>
+      <label for="password" class="block mb-2 text-sm font-medium">Kata Sandi</label>
       <input
         v-model="password"
         type="password"
         id="password"
         name="password"
+        placeholder="Masukkan kata sandi..."
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       />
     </div>
-    <CustomButton text="LOGIN" @click="login()" />
+    <CustomButton text="MASUK" @click="login()" />
   </form>
 </template>
