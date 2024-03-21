@@ -45,11 +45,15 @@ function findAnswer(id) {
 <template>
   <CustomLoading v-if="loading" />
   <main v-else class="w-full">
-    <div class="sticky top-0 bg-gray-100 py-2 flex gap-2 justify-center">
+    <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.back()" />
-      <CustomButton :text="'SCORE : ' + totalScore" type="primary" :disabled="true" />
+      <CustomButton
+        :text="'SCORE : ' + totalScore + '/' + questions.length"
+        type="primary"
+        :disabled="true"
+      />
     </div>
-    <div class="flex-col gap-5 flex">
+    <div class="flex-col gap-5 flex p-5">
       <div
         class="flex flex-col gap-2"
         v-for="(question, idx) in questions"
