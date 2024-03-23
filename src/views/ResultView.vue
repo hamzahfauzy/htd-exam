@@ -48,7 +48,7 @@ function findAnswer(id) {
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.back()" />
       <CustomButton
-        :text="'SCORE : ' + totalScore + '/' + questions.length"
+        :text="'SCORE : ' + (totalScore / questions.length) * 100"
         type="primary"
         :disabled="true"
       />
