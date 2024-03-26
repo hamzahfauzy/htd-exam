@@ -24,7 +24,7 @@ const month = [
 ]
 const token = ref(localStorage.getItem('token'))
 const router = useRouter()
-const schedule_status = ref('') //today upcoming overdue
+const schedule_status = ref('today') //today upcoming overdue
 const user = ref()
 const schedules = ref()
 const loading = ref(true)
