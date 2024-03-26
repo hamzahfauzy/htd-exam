@@ -178,7 +178,7 @@ function handleSubmitScheduleToken() {
   </CustomModal>
   <main
     v-else-if="!loading && !showModalScheduleToken"
-    class="text-center w-full flex-col gap-5 flex p-5"
+    class="text-center w-full flex-col gap-5 flex p-5 self-start"
   >
     <div>
       <h5 class="text-xl">Halo, {{ user.name }}</h5>

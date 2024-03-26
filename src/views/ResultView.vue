@@ -44,7 +44,7 @@ function findAnswer(id) {
 
 <template>
   <CustomLoading v-if="loading" />
-  <main v-else class="w-full">
+  <main v-else class="w-full self-start">
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
@@ -62,33 +62,43 @@ function findAnswer(id) {
       >
         <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
 
-        <div class="flex flex-col gap-1">
-          <div class="flex flex-col gap-1">
-            <div v-for="answer in question.answers" :key="answer.id" class="flex items-center">
-              <input
-                :id="question.id + '-' + answer.id"
-                type="radio"
-                :value="answer.id"
-                :name="question.id"
-                :checked="findAnswer(question.id).answer_id == answer.id"
-                :disabled="findAnswer(question.id).answer_id != answer.id"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                :for="question.id + '-' + answer.id"
-                :class="[
-                  'ms-2 text-sm font-medium',
-                  findAnswer(question.id).answer_id == answer.id &&
-                  findAnswer(question.id).score == 1
-                    ? 'text-green-700'
-                    : findAnswer(question.id).answer_id == answer.id &&
-                        findAnswer(question.id).score == 0
-                      ? 'text-red-700'
-                      : ''
-                ]"
-                v-html="answer.description"
-              ></label>
-            </div>
+        <div v-if="question.answers.length < 1" class="flex flex-col gap-2 items-start">
+          <p :class="['text-sm font-medium']" v-html="findAnswer(question.id).answer_id"></p>
+          <span
+            v-if="findAnswer(question.id).score != null"
+            :class="[
+              'text-xs font-medium px-2.5 py-0.5 rounded border',
+              findAnswer(question.id).score > 0
+                ? 'bg-green-100 text-green-800 border-green-800 '
+                : 'bg-red-100 text-red-800 border-red-800 '
+            ]"
+            >Score : {{ findAnswer(question.id).score }}</span
+          >
+        </div>
+        <div v-else class="flex flex-col gap-1">
+          <div v-for="answer in question.answers" :key="answer.id" class="flex items-center">
+            <input
+              :id="question.id + '-' + answer.id"
+              type="radio"
+              :value="answer.id"
+              :name="question.id"
+              :checked="findAnswer(question.id).answer_id == answer.id"
+              :disabled="findAnswer(question.id).answer_id != answer.id"
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label
+              :for="question.id + '-' + answer.id"
+              :class="[
+                'ms-2 text-sm font-medium',
+                findAnswer(question.id).answer_id == answer.id && findAnswer(question.id).score == 1
+                  ? 'text-green-700'
+                  : findAnswer(question.id).answer_id == answer.id &&
+                      findAnswer(question.id).score == 0
+                    ? 'text-red-700'
+                    : ''
+              ]"
+              v-html="answer.description"
+            ></label>
           </div>
         </div>
       </div>

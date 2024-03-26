@@ -40,16 +40,21 @@ async function getUser() {
   }
 }
 
-function isSavedAnswer(question, answer) {
-  return (
-    savedAnswers.value.findIndex(
-      (data) =>
-        data.question == question.id &&
-        data.answer == answer.id &&
-        data.schedule == route.params.id &&
-        data.user == user.value.username
-    ) > -1
-  )
+function isSavedAnswer(question, answer, isEssay = false) {
+  return isEssay
+    ? savedAnswers.value.find(
+        (data) =>
+          data.question == question.id &&
+          data.schedule == route.params.id &&
+          data.user == user.value.username
+      )
+    : savedAnswers.value.findIndex(
+        (data) =>
+          data.question == question.id &&
+          data.answer == answer.id &&
+          data.schedule == route.params.id &&
+          data.user == user.value.username
+      ) > -1
 }
 
 async function postTimer() {
@@ -110,7 +115,7 @@ async function getQuestions() {
   }
 }
 
-function answerQuestion(question, answer) {
+function answerQuestion(question, answer, isEssay = false) {
   const foundIndex = savedAnswers.value.findIndex(
     (data) =>
       data.question == question.id &&
@@ -119,13 +124,16 @@ function answerQuestion(question, answer) {
   )
 
   if (foundIndex > -1) {
-    savedAnswers.value[foundIndex] = { ...savedAnswers.value[foundIndex], answer: answer.id }
+    savedAnswers.value[foundIndex] = {
+      ...savedAnswers.value[foundIndex],
+      answer: isEssay ? answer : answer.id
+    }
   } else {
     savedAnswers.value.push({
       user: user.value.username,
       schedule: route.params.id,
       question: question.id,
-      answer: answer.id
+      answer: isEssay ? answer : answer.id
     })
   }
 
@@ -184,7 +192,7 @@ async function handleSubmitExam() {
       <CustomButton text="YAKIN" type="success" @click="handleSubmitExam" />
     </div>
   </CustomModal>
-  <main v-else-if="!loading && !showModal" class="w-full">
+  <main v-else-if="!loading && !showModal" class="w-full self-start">
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
@@ -203,24 +211,30 @@ async function handleSubmitExam() {
       >
         <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
 
-        <div class="flex flex-col gap-1">
-          <div class="flex flex-col gap-1">
-            <div v-for="answer in question.answers" :key="answer.id" class="flex items-center">
-              <input
-                :id="question.id + '-' + answer.id"
-                type="radio"
-                :value="answer.id"
-                :name="question.id"
-                @input="answerQuestion(question, answer)"
-                :checked="isSavedAnswer(question, answer)"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                :for="question.id + '-' + answer.id"
-                class="ms-2 text-sm font-medium"
-                v-html="answer.description"
-              ></label>
-            </div>
+        <div v-if="question.answers.length < 1">
+          <input
+            :value="isSavedAnswer(question, null, true)?.answer"
+            @input="(event) => answerQuestion(question, event.target.value, true)"
+            placeholder="Masukkan Jawaban..."
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          />
+        </div>
+        <div v-else class="flex flex-col gap-1">
+          <div v-for="answer in question.answers" :key="answer.id" class="flex items-center">
+            <input
+              :id="question.id + '-' + answer.id"
+              type="radio"
+              :value="answer.id"
+              :name="question.id"
+              @input="answerQuestion(question, answer)"
+              :checked="isSavedAnswer(question, answer)"
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label
+              :for="question.id + '-' + answer.id"
+              class="ms-2 text-sm font-medium"
+              v-html="answer.description"
+            ></label>
           </div>
         </div>
       </div>
