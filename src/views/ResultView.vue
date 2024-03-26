@@ -33,7 +33,7 @@ async function getResult() {
     answers.value = data.data.normalizeAnswers
     totalScore.value = data.data.totalScore
   } catch (e) {
-    router.back()
+    router.replace({ name: 'home' })
   }
 }
 
@@ -46,9 +46,9 @@ function findAnswer(id) {
   <CustomLoading v-if="loading" />
   <main v-else class="w-full">
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="router.back()" />
+      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
-        :text="'SCORE : ' + (totalScore / questions.length) * 100"
+        :text="`SCORE : ${totalScore}/${questions.length} (${(totalScore / questions.length) * 100})`"
         type="primary"
         :disabled="true"
       />

@@ -106,7 +106,7 @@ async function getQuestions() {
     schedule.value = data.data.schedule
     await postTimer()
   } catch (e) {
-    router.back()
+    router.replace({ name: 'home' })
   }
 }
 
@@ -186,7 +186,7 @@ async function handleSubmitExam() {
   </CustomModal>
   <main v-else-if="!loading && !showModal" class="w-full">
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="router.back()" />
+      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
         type="danger"
