@@ -19,6 +19,7 @@ const timerMinutes = ref('00')
 const timerSeconds = ref('00')
 const showModal = ref(false)
 const user = ref()
+const isDisabled = ref(false)
 
 onMounted(async () => {
   await getQuestions()
@@ -92,7 +93,8 @@ function runTimer() {
 
     if (timer.value < 0) {
       clearInterval(x)
-      await handleSubmitExam()
+      disabledAllInput()
+      // await handleSubmitExam()
     }
   }, 1000)
 }
@@ -109,7 +111,14 @@ async function getQuestions() {
     )
     questions.value = data.data.schedule_user_data.data
     schedule.value = data.data.schedule
-    await postTimer()
+    if(data.data.is_finished)
+    {
+      disabledAllInput()
+    }
+    else
+    {
+      await postTimer()
+    }
   } catch (e) {
     router.replace({ name: 'home' })
   }
@@ -179,6 +188,11 @@ async function handleSubmitExam() {
     console.error(e)
   }
 }
+
+function disabledAllInput()
+{
+  isDisabled.value = true
+}
 </script>
 
 <template>
@@ -216,6 +230,7 @@ async function handleSubmitExam() {
             :value="isSavedAnswer(question, null, true)?.answer"
             @input="(event) => answerQuestion(question, event.target.value, true)"
             placeholder="Masukkan Jawaban..."
+            :disabled="isDisabled"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           />
         </div>
@@ -228,6 +243,7 @@ async function handleSubmitExam() {
               :name="question.id"
               @input="answerQuestion(question, answer)"
               :checked="isSavedAnswer(question, answer)"
+              :disabled="isDisabled"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <label
