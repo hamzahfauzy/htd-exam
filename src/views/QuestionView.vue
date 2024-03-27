@@ -91,7 +91,7 @@ function runTimer() {
     timerMinutes.value = timerMinutes.value < 10 ? '0' + timerMinutes.value : timerMinutes.value
     timerSeconds.value = timerSeconds.value < 10 ? '0' + timerSeconds.value : timerSeconds.value
 
-    if (timer.value < 0) {
+    if (timer.value <= 0) {
       clearInterval(x)
       disabledAllInput()
       // await handleSubmitExam()
