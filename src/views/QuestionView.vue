@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import CustomLoading from '@/components/CustomLoading.vue'
+import Camera from 'simple-vue-camera'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,8 +19,21 @@ const timerHours = ref('00')
 const timerMinutes = ref('00')
 const timerSeconds = ref('00')
 const showModal = ref(false)
+const showModalCamera = ref(false)
+const showModalImage = ref(false)
 const user = ref()
 const isDisabled = ref(false)
+const selectedItem = ref()
+const camera = ref()
+const camStarted = ref(false)
+
+const loadingCamera = () => console.log('Camera is loading and will start any second')
+const started = () => (camStarted.value = true)
+const stopped = () => (camStarted.value = false)
+const paused = () => (camStarted.value = false)
+const resumed = () => (camStarted.value = true)
+const error = () => (camStarted.value = false)
+const cameraChange = () => console.log('Camera Changed')
 
 onMounted(async () => {
   await getQuestions()
@@ -27,6 +41,76 @@ onMounted(async () => {
 
   loading.value = false
 })
+
+const startCam = (question) => {
+  selectedItem.value = question
+  camera.value.start()
+  showModalCamera.value = true
+}
+
+const stopCam = () => {
+  camera.value.stop()
+  showModalCamera.value = false
+}
+
+const loadImage = (question) => {
+  selectedItem.value = question
+  showModalImage.value = true
+}
+
+const removeImage = (question) => {
+  const foundIndex = savedAnswers.value.findIndex(
+    (data) =>
+      data.question == question.id &&
+      data.schedule == route.params.id &&
+      data.user == user.value.username
+  )
+
+  if (foundIndex > -1) {
+    savedAnswers.value[foundIndex] = {
+      ...savedAnswers.value[foundIndex],
+      image: null
+    }
+  }
+
+  showModalImage.value = false
+
+  localStorage.setItem('savedAnswers', JSON.stringify(savedAnswers.value))
+}
+
+const snapshot = async () => {
+  const blob = await camera.value?.snapshot()
+  var reader = new FileReader()
+  reader.readAsDataURL(blob)
+  reader.onloadend = function () {
+    let base64String = reader.result
+    const foundIndex = savedAnswers.value.findIndex(
+      (data) =>
+        data.question == selectedItem.value.id &&
+        data.schedule == route.params.id &&
+        data.user == user.value.username
+    )
+
+    if (foundIndex > -1) {
+      savedAnswers.value[foundIndex] = {
+        ...savedAnswers.value[foundIndex],
+        image: base64String
+      }
+    } else {
+      savedAnswers.value.push({
+        user: user.value.username,
+        schedule: route.params.id,
+        question: selectedItem.value.id,
+        answer: '',
+        image: base64String
+      })
+    }
+
+    localStorage.setItem('savedAnswers', JSON.stringify(savedAnswers.value))
+
+    stopCam()
+  }
+}
 
 async function getUser() {
   try {
@@ -111,12 +195,9 @@ async function getQuestions() {
     )
     questions.value = data.data.schedule_user_data.data
     schedule.value = data.data.schedule
-    if(data.data.is_finished)
-    {
+    if (data.data.is_finished) {
       disabledAllInput()
-    }
-    else
-    {
+    } else {
       await postTimer()
     }
   } catch (e) {
@@ -159,7 +240,10 @@ async function handleSubmitExam() {
 
     savedAnswers.value.map((data) => {
       if (data.schedule == route.params.id) {
-        formData.append(`answer[${data.question}]`, data.answer)
+        formData.append(
+          `answer[${data.question}]`,
+          data.image ? `<img src="${data.image}">` : data.answer
+        )
       }
     })
 
@@ -189,13 +273,46 @@ async function handleSubmitExam() {
   }
 }
 
-function disabledAllInput()
-{
+function disabledAllInput() {
   isDisabled.value = true
 }
 </script>
 
 <template>
+  <CustomModal v-if="showModalImage && !loading">
+    <div class="flex flex-col gap-4">
+      <img :src="isSavedAnswer(selectedItem, null, true)?.image" />
+      <div class="flex gap-3 justify-center">
+        <CustomButton text="Tutup" type="secondary" @click="showModalImage = false" />
+        <CustomButton text="Hapus Gambar" type="danger" @click="removeImage(selectedItem)" />
+      </div>
+    </div>
+  </CustomModal>
+  <CustomModal v-show="showModalCamera">
+    <div class="flex flex-col gap-4">
+      <Camera
+        :resolution="{ width: 375, height: 500 }"
+        ref="camera"
+        :autoplay="false"
+        @loading="loadingCamera"
+        @started="started"
+        @stopped="stopped"
+        @paused="paused"
+        @resumed="resumed"
+        @camera-change="cameraChange"
+        @error="error"
+      >
+        <div
+          v-if="camStarted"
+          class="absolute left-1/2 transform -translate-x-1/2 bottom-5 flex gap-3"
+        >
+          <CustomButton text="Ambil Gambar" type="success" @click="snapshot" />
+          <CustomButton text="Ganti Camera" @click="camera.changeCamera()" />
+          <CustomButton text="Tutup Camera" type="danger" @click="stopCam" />
+        </div>
+      </Camera>
+    </div>
+  </CustomModal>
   <CustomLoading v-if="loading" />
   <CustomModal v-else-if="!loading && showModal" class="text-center">
     <h3 class="mb-5 text-lg font-normal text-gray-500">
@@ -206,7 +323,10 @@ function disabledAllInput()
       <CustomButton text="YAKIN" type="success" @click="handleSubmitExam" />
     </div>
   </CustomModal>
-  <main v-else-if="!loading && !showModal" class="w-full self-start">
+  <main
+    v-else-if="!loading && !showModal && !showModalCamera && !showModalImage"
+    class="w-full self-start"
+  >
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
@@ -225,13 +345,38 @@ function disabledAllInput()
       >
         <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
 
-        <div v-if="question.answers.length < 1">
+        <div v-if="question.answers.length < 1" class="flex flex-col gap-3">
           <input
+            v-if="!isSavedAnswer(question, null, true)?.image"
             :value="isSavedAnswer(question, null, true)?.answer"
             @input="(event) => answerQuestion(question, event.target.value, true)"
             placeholder="Masukkan Jawaban..."
             :disabled="isDisabled"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          />
+
+          <CustomButton
+            v-if="!isSavedAnswer(question, null, true)?.answer"
+            text="Ambil Gambar"
+            @click="startCam(question)"
+          />
+          <CustomButton
+            v-if="
+              !isSavedAnswer(question, null, true)?.answer &&
+              isSavedAnswer(question, null, true)?.image
+            "
+            type="success"
+            text="Lihat Gambar"
+            @click="loadImage(question)"
+          />
+          <CustomButton
+            v-if="
+              !isSavedAnswer(question, null, true)?.answer &&
+              isSavedAnswer(question, null, true)?.image
+            "
+            type="danger"
+            text="Hapus Gambar"
+            @click="removeImage(question)"
           />
         </div>
         <div v-else class="flex flex-col gap-1">
