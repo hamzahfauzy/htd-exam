@@ -21,6 +21,7 @@ const timerSeconds = ref('00')
 const showModal = ref(false)
 const showModalCamera = ref(false)
 const showModalImage = ref(false)
+const showModalOutofTime = ref(true)
 const user = ref()
 const isDisabled = ref(false)
 const selectedItem = ref()
@@ -178,6 +179,7 @@ function runTimer() {
     if (timer.value <= 0) {
       clearInterval(x)
       disabledAllInput()
+      showModalOutofTime.value = true
       // await handleSubmitExam()
     }
   }, 1000)
@@ -279,6 +281,17 @@ function disabledAllInput() {
 </script>
 
 <template>
+  <CustomModal v-if="showModalOutofTime && !loading">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2 text-center">
+        <h5 class="text-xl">Waktu ujian telah habis!</h5>
+        <h6>Klik OK untuk mengirim Jawaban</h6>
+      </div>
+      <div class="flex gap-3 justify-center">
+        <CustomButton text="OK" type="success" @click="handleSubmitExam" />
+      </div>
+    </div>
+  </CustomModal>
   <CustomModal v-if="showModalImage && !loading">
     <div class="flex flex-col gap-4">
       <img :src="isSavedAnswer(selectedItem, null, true)?.image" />
@@ -324,7 +337,7 @@ function disabledAllInput() {
     </div>
   </CustomModal>
   <main
-    v-else-if="!loading && !showModal && !showModalCamera && !showModalImage"
+    v-else-if="!loading && !showModal && !showModalCamera && !showModalImage && !showModalOutofTime"
     class="w-full self-start"
   >
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
