@@ -356,7 +356,8 @@ function disabledAllInput() {
         :key="question.id"
         :id="'question-' + question.id"
       >
-        <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
+        <h5 class="text-md font-medium" v-html="+ (idx + 1) + '. Soal No. '+ (idx + 1)"></h5>
+        <p v-html="question.description"></p>
 
         <div v-if="question.answers.length < 1" class="flex flex-col gap-3">
           <input
@@ -406,7 +407,7 @@ function disabledAllInput() {
             />
             <label
               :for="question.id + '-' + answer.id"
-              class="ms-2 text-sm font-medium"
+              class="ms-2 text-sm"
               v-html="answer.description"
             ></label>
           </div>
