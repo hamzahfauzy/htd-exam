@@ -42,8 +42,8 @@ async function login() {
 
 <template>
   <form class="w-full flex-col gap-4 flex p-5">
-    <img src="../assets/logo.png" alt="" width="150" class="mx-auto" />
-    <h3 class="text-xl text-center font-bold">SMK Negeri 1 Pulau Rakyat</h3>
+    <img src="https://queez.id/wp-content/uploads/2024/04/cropped-queezid-high-resolution-logo-transparent-1.png" alt="" width="150" class="mx-auto" />
+    <h3 class="text-xl text-center font-bold">QUEEZ.ID the easiest exam platform</h3>
     <CustomAlert v-if="isSubmited" :text="message" :type="status ? 'success' : 'danger'" />
     <div>
       <label for="username" class="block mb-2 text-sm font-medium">Nama Pengguna</label>
