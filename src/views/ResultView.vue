@@ -29,7 +29,7 @@ function decode (value) {
 async function getResult() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL + '/exam/result?id=' + route.params.id,
+      window.base_api_url + '/exam/result?id=' + route.params.id,
       {
         headers: {
           Authorization: 'Bearer ' + token.value

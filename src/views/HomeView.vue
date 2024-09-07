@@ -47,7 +47,7 @@ watch(schedule_status, async () => {
 
 async function getUser() {
   try {
-    const { data } = await axios.get(import.meta.env.VITE_API_URL + '/auth/get-user', {
+    const { data } = await axios.get(window.base_api_url + '/auth/get-user', {
       headers: {
         Authorization: 'Bearer ' + token.value
       }
@@ -61,7 +61,7 @@ async function getUser() {
 async function getSchedule() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL +
+      window.base_api_url +
         '/crud/datatable?table=exam_schedules' +
         (schedule_status.value ? '&filter[schedule_status]=' + schedule_status.value : '') +
         (search.value ? '&search[value]=' + search.value : ''),
@@ -126,6 +126,7 @@ function routeButtonAction(schedule, label) {
 }
 
 function logout() {
+  localStorage.removeItem('app_code')
   localStorage.removeItem('token')
   router.replace({ name: 'login' })
 }

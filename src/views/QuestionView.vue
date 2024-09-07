@@ -115,7 +115,7 @@ const snapshot = async () => {
 
 async function getUser() {
   try {
-    const { data } = await axios.get(import.meta.env.VITE_API_URL + '/auth/get-user', {
+    const { data } = await axios.get(window.base_api_url + '/auth/get-user', {
       headers: {
         Authorization: 'Bearer ' + token.value
       }
@@ -146,7 +146,7 @@ function isSavedAnswer(question, answer, isEssay = false) {
 async function postTimer() {
   try {
     const { data } = await axios.post(
-      import.meta.env.VITE_API_URL + '/exam/timer',
+      window.base_api_url + '/exam/timer',
       {
         end: schedule.value.end_at
       },
@@ -188,7 +188,7 @@ function runTimer() {
 async function getQuestions() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       {
         headers: {
           Authorization: 'Bearer ' + token.value
@@ -250,7 +250,7 @@ async function handleSubmitExam() {
     })
 
     await axios.post(
-      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       formData,
       {
         headers: {
