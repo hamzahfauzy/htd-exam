@@ -15,9 +15,9 @@ const router = useRouter()
 
 async function login() {
   try {
-    window.base_api_url = window.base_api_url.replace('{app_code}', app_code.value)
+    const base_api_url = window.base_api_url.replace('{app_code}', app_code.value)
     const { data } = await axios.post(
-      window.base_api_url + '/auth/login',
+      base_api_url + '/auth/login',
       {
         username: username.value,
         password: password.value
@@ -30,6 +30,7 @@ async function login() {
     )
     message.value = data.message
     status.value = true
+    window.base_api_url = window.base_api_url.replace('{app_code}', app_code.value)
     localStorage.setItem('app_code', app_code.value)
     localStorage.setItem('token', data.data.token)
     router.replace({ name: 'home' })
