@@ -105,6 +105,8 @@ function getButtonTypeAction(label) {
       return 'primary'
     case 'Hasil':
       return 'success'
+    case 'Terkunci':
+      return 'danger'
 
     default:
       return 'secondary'
@@ -139,7 +141,39 @@ function closeModalScheduleToken() {
   showModalScheduleToken.value = false
 }
 
-function handleSubmitScheduleToken() {
+async function handleSubmitScheduleToken() {
+  if(isLocked(selectedSchedule.value))
+  {
+    try {
+      const { data } = await axios.post(window.base_api_url +'/exam/open-lock',
+        {
+          token: scheduleToken.value
+        },
+        {
+          headers: {
+            Authorization: 'Bearer ' + token.value,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      )
+      if(data.data.status)
+      {
+        localStorage.removeItem('schedule_'+selectedSchedule.value.id)
+        isScheduleTokenSubmitted.value = true
+        isScheduleTokenValid.value = true
+        router.push({ name: 'question', params: { id: selectedSchedule.value.id } })
+      }
+      else
+      {
+        isScheduleTokenSubmitted.value = true
+        isScheduleTokenValid.value = false
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    return
+  }
+
   if (selectedSchedule.value.token === scheduleToken.value) {
     isScheduleTokenSubmitted.value = true
     isScheduleTokenValid.value = true
@@ -148,6 +182,11 @@ function handleSubmitScheduleToken() {
     isScheduleTokenSubmitted.value = true
     isScheduleTokenValid.value = false
   }
+}
+
+function isLocked(schedule)
+{
+  return localStorage.getItem('schedule_'+schedule.id)
 }
 </script>
 
@@ -239,9 +278,9 @@ function handleSubmitScheduleToken() {
         <CustomButton
           v-for="(action, index) in schedule.actions"
           :key="index"
-          :text="action.label"
+          :text="isLocked(schedule) ? 'Terkunci' : action.label"
           :disabled="!action.route"
-          :type="getButtonTypeAction(action.label)"
+          :type="getButtonTypeAction(isLocked(schedule) ? 'Terkunci' : action.label)"
           @click="routeButtonAction(schedule, action.label)"
         />
       </div>

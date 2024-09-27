@@ -37,11 +37,57 @@ const error = () => (camStarted.value = false)
 const cameraChange = () => console.log('Camera Changed')
 
 onMounted(async () => {
+  const schedule = route.params.id
+  if(localStorage.getItem('schedule_'+schedule))
+  {
+    router.replace({ name: 'home' })
+  }
+
   await getQuestions()
   await getUser()
 
-  loading.value = false
+  const thisLoading = loading
+  Promise.all(Array.from(document.images).map(img => {
+      if (img.complete)
+          if (img.naturalHeight !== 0)
+              return Promise.resolve();
+          else
+              return Promise.reject(img);
+      return new Promise((resolve, reject) => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', () => reject(img));
+      });
+  })).then(() => {
+      console.log('all images loaded successfully');
+      loading.value = false
+
+      document.addEventListener('blur',e=>{
+        // alert('Tab Changed Blur')
+        // locked this session
+        locked()
+      })
+      document.addEventListener('visibilitychange',e=>{
+        // alert('Tab Changed Visibility Change')
+        // locked this session
+        locked()
+      })
+  }, badImg => {
+      console.log('some image failed to load, others may still be loading');
+      console.log('first broken image:', badImg);
+  });
+
+  
 })
+
+function locked()
+{
+  const schedule = route.params.id
+  if(schedule)
+  {
+    localStorage.setItem('schedule_'+schedule, 1)
+    router.replace({ name: 'home' })
+  }
+}
 
 const startCam = (question) => {
   selectedItem.value = question
@@ -165,6 +211,7 @@ async function postTimer() {
 }
 
 function runTimer() {
+  console.log('timer running')
   var x = setInterval(async function () {
     timer.value -= 1
 
