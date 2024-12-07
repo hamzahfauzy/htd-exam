@@ -407,14 +407,13 @@ function disabledAllInput() {
         <p v-html="question.description"></p>
 
         <div v-if="question.answers.length < 1" class="flex flex-col gap-3">
-          <input
+          <textarea
             v-if="!isSavedAnswer(question, null, true)?.image"
-            :value="isSavedAnswer(question, null, true)?.answer"
             @input="(event) => answerQuestion(question, event.target.value, true)"
             placeholder="Masukkan Jawaban..."
             :disabled="isDisabled"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          />
+          >{{ isSavedAnswer(question, null, true)?.answer }}</textarea>
 
           <CustomButton
             v-if="!isSavedAnswer(question, null, true)?.answer"
