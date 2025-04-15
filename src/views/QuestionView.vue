@@ -71,6 +71,16 @@ onMounted(async () => {
         // locked this session
         locked()
       })
+
+      window.addEventListener('beforeunload', function (e) {
+        if(route.matched.some(({ path }) => path.startsWith('/question'))){
+            //handle redirect
+            // Cancel the event
+            e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+        }
+      });
   }, badImg => {
       console.log('some image failed to load, others may still be loading');
       console.log('first broken image:', badImg);
@@ -325,6 +335,11 @@ async function handleSubmitExam() {
 function disabledAllInput() {
   isDisabled.value = true
 }
+
+function toTop() {
+  document.body.scrollTop = 0; // For Safari
+  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+}
 </script>
 
 <template>
@@ -395,6 +410,7 @@ function disabledAllInput() {
         :disabled="true"
       />
       <CustomButton text="KIRIM" @click="handleSubmit" />
+      <CustomButton text="<img src='https://smkn1pr.queez.id/storage/1744681538-arrow-up-svgrepo-com.svg' width='20px' height='20px'>" type="secondary" @click="toTop()" />
     </div>
     <div class="flex-col gap-5 flex p-5">
       <div
