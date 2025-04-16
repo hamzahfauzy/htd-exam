@@ -186,7 +186,7 @@ async function handleSubmitScheduleToken() {
 
 function isLocked(schedule)
 {
-  return localStorage.getItem('schedule_'+schedule.id) && schedule.exam_user_status == ""
+  return localStorage.getItem('schedule_'+schedule.id) && schedule.exam_user_status != "DONE"
 }
 </script>
 

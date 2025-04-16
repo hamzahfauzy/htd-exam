@@ -432,7 +432,7 @@ function toTop() {
     class="w-full self-start"
   >
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
+      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" v-if="isOnline" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
         type="danger"
