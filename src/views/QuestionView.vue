@@ -22,11 +22,13 @@ const showModal = ref(false)
 const showModalCamera = ref(false)
 const showModalImage = ref(false)
 const showModalOutofTime = ref(false)
+const initModal = ref(false)
 const user = ref()
 const isDisabled = ref(false)
 const selectedItem = ref()
 const camera = ref()
 const camStarted = ref(false)
+const isOnline = ref(false)
 
 const loadingCamera = () => console.log('Camera is loading and will start any second')
 const started = () => (camStarted.value = true)
@@ -60,17 +62,21 @@ onMounted(async () => {
   })).then(() => {
       console.log('all images loaded successfully');
       loading.value = false
+      isOnline.value = navigator.onLine
 
-      document.addEventListener('blur',e=>{
-        // alert('Tab Changed Blur')
-        // locked this session
-        locked()
-      })
-      document.addEventListener('visibilitychange',e=>{
-        // alert('Tab Changed Visibility Change')
-        // locked this session
-        locked()
-      })
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', updateStatus);
+
+      // document.addEventListener('blur',e=>{
+      //   // alert('Tab Changed Blur')
+      //   // locked this session
+      //   locked()
+      // })
+      // document.addEventListener('visibilitychange',e=>{
+      //   // alert('Tab Changed Visibility Change')
+      //   // locked this session
+      //   locked()
+      // })
 
       window.addEventListener('beforeunload', function (e) {
         if(route.matched.some(({ path }) => path.startsWith('/question'))){
@@ -96,6 +102,17 @@ function locked()
   {
     localStorage.setItem('schedule_'+schedule, 1)
     router.replace({ name: 'home' })
+  }
+}
+
+function updateStatus() {
+  isOnline.value = navigator.onLine
+  if(route.matched.some(({ path }) => path.startsWith('/question'))){
+    if (isOnline.value && !showModal.value) {
+      locked()
+    } else {
+      initModal.value = false
+    }
   }
 }
 
@@ -290,6 +307,8 @@ function answerQuestion(question, answer, isEssay = false) {
 }
 
 function handleSubmit() {
+  const schedule = route.params.id
+  localStorage.setItem('schedule_'+schedule, 1)
   showModal.value = true
 }
 
@@ -343,6 +362,15 @@ function toTop() {
 </script>
 
 <template>
+  <CustomModal v-if="isOnline && !showModal">
+    <div class="backdrop" style="position: fixed;top: 0;left: 0;height: 100%;background: rgb(243,244,246);width: 100%;"></div>
+    <div class="flex flex-col gap-4" style="position:relative">
+      <div class="flex flex-col gap-2 text-center">
+        <h5 class="text-xl">Harap aktifkan mode pesawat.</h5>
+        <h6>Tampilan ini akan hilang setelah mode pesawat di aktifkan</h6>
+      </div>
+    </div>
+  </CustomModal>
   <CustomModal v-if="showModalOutofTime && !loading">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2 text-center">
@@ -391,11 +419,12 @@ function toTop() {
   <CustomLoading v-if="loading" />
   <CustomModal v-else-if="!loading && showModal" class="text-center">
     <h3 class="mb-5 text-lg font-normal text-gray-500">
-      Apakah anda yakin ingin mengirimkan jawaban?
+      <!-- Apakah anda yakin ingin mengirimkan jawaban? -->
+      Harap matikan mode pesawat sebelum mengirimkan Jawaban.
     </h3>
     <div class="flex gap-3 justify-center">
-      <CustomButton text="TIDAK" type="danger" @click="showModal = false" />
-      <CustomButton text="YAKIN" type="success" @click="handleSubmitExam" />
+      <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
+      <CustomButton text="KIRIM JAWABAN" type="success" @click="handleSubmitExam" v-if="isOnline" />
     </div>
   </CustomModal>
   <main
