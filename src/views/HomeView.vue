@@ -289,5 +289,9 @@ function isLocked(schedule)
     <div class="flex flex-col gap-2">
       <CustomButton text="KELUAR" type="danger" @click="logout()" />
     </div>
+
+    <center>
+      Queez Versi 1.1
+    </center>
   </main>
 </template>
