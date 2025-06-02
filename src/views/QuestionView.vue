@@ -366,8 +366,8 @@ function toTop() {
     <div class="backdrop" style="position: fixed;top: 0;left: 0;height: 100%;background: rgb(243,244,246);width: 100%;"></div>
     <div class="flex flex-col gap-4" style="position:relative">
       <div class="flex flex-col gap-2 text-center">
-        <h5 class="text-xl">Harap aktifkan mode pesawat.</h5>
-        <h6>Tampilan ini akan hilang setelah mode pesawat di aktifkan</h6>
+        <h5 class="text-xl">Harap matikan seluruh koneksi internet.</h5>
+        <h6>Tampilan ini akan hilang setelah perangkat kamu tidak terkoneksi internet.</h6>
       </div>
     </div>
   </CustomModal>
@@ -420,7 +420,7 @@ function toTop() {
   <CustomModal v-else-if="!loading && showModal" class="text-center">
     <h3 class="mb-5 text-lg font-normal text-gray-500">
       <!-- Apakah anda yakin ingin mengirimkan jawaban? -->
-      Harap matikan mode pesawat sebelum mengirimkan Jawaban.
+      Harap aktifkan koneksi internet sebelum mengirimkan Jawaban.
     </h3>
     <div class="flex gap-3 justify-center">
       <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
