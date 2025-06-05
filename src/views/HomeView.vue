@@ -291,7 +291,7 @@ function isLocked(schedule)
     </div>
 
     <center>
-      Queez Versi 1.1
+      Queez Versi 1.2
     </center>
   </main>
 </template>

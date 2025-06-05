@@ -45,6 +45,8 @@ onMounted(async () => {
     router.replace({ name: 'home' })
   }
 
+  localStorage.setItem('status_schedule_'+schedule, 'start')
+
   await getQuestions()
   await getUser()
 
@@ -107,8 +109,10 @@ function locked()
 
 function updateStatus() {
   isOnline.value = navigator.onLine
+  const schedule = route.params.id
+  const isFinish = localStorage.getItem('status_schedule_'+schedule)
   if(route.matched.some(({ path }) => path.startsWith('/question'))){
-    if (isOnline.value && !showModal.value) {
+    if (isOnline.value && !isFinish != 'finish') {
       locked()
     } else {
       initModal.value = false
@@ -309,6 +313,7 @@ function answerQuestion(question, answer, isEssay = false) {
 function handleSubmit() {
   const schedule = route.params.id
   localStorage.setItem('schedule_'+schedule, 1)
+  localStorage.setItem('status_schedule_'+schedule, 'finish')
   showModal.value = true
 }
 
