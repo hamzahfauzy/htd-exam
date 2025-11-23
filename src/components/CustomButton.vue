@@ -46,7 +46,6 @@ function buttonClass() {
 </script>
 
 <template>
-  <button type="button" :class="buttonClass()" :disabled="disabled">
-    {{ text }}
+  <button type="button" :class="buttonClass()" :disabled="disabled" v-html="text">
   </button>
 </template>

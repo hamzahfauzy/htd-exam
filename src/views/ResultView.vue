@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import CustomLoading from '@/components/CustomLoading.vue'
+import he from 'he/he';
 
 const route = useRoute()
 const router = useRouter()
@@ -19,10 +20,16 @@ onMounted(async () => {
   loading.value = false
 })
 
+function decode (value) {
+  let decoded = value
+  if(value){ decoded = he.decode(value) }
+  return decoded 
+}
+
 async function getResult() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL + '/exam/result?id=' + route.params.id,
+      window.base_api_url + '/exam/result?id=' + route.params.id,
       {
         headers: {
           Authorization: 'Bearer ' + token.value
@@ -40,6 +47,13 @@ async function getResult() {
 function findAnswer(id) {
   return answers.value[id]
 }
+
+function numberFormat(number)
+{
+  return new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(
+    number
+  )
+}
 </script>
 
 <template>
@@ -48,7 +62,7 @@ function findAnswer(id) {
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
       <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
       <CustomButton
-        :text="`SCORE : ${totalScore}/${questions.length} (${(totalScore / questions.length) * 100})`"
+        :text="`SCORE : ${totalScore}/${questions.length} (${numberFormat((totalScore / questions.length) * 100)})`"
         type="primary"
         :disabled="true"
       />
@@ -60,10 +74,11 @@ function findAnswer(id) {
         :key="question.id"
         :id="'question-' + question.id"
       >
-        <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
+        <h5 class="text-md font-medium" v-html="+ (idx + 1) + '. Soal No. '+ (idx + 1)"></h5>
+        <p v-html="question.description"></p>
 
         <div v-if="question.answers.length < 1" class="flex flex-col gap-2 items-start">
-          <p :class="['text-sm font-medium']" v-html="findAnswer(question.id).answer_id"></p>
+          <p :class="['text-sm font-medium']" v-html="decode(findAnswer(question.id).answer_id)"></p>
           <span
             v-if="findAnswer(question.id).score != null"
             :class="[
@@ -89,7 +104,7 @@ function findAnswer(id) {
             <label
               :for="question.id + '-' + answer.id"
               :class="[
-                'ms-2 text-sm font-medium',
+                'ms-2 text-sm',
                 findAnswer(question.id).answer_id == answer.id && findAnswer(question.id).score == 1
                   ? 'text-green-700'
                   : findAnswer(question.id).answer_id == answer.id &&

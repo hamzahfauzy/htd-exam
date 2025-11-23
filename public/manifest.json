@@ -1,0 +1,21 @@
+{
+    "name": "QUEEZ.ID - The easiest exam platform",
+    "short_name": "queez.id",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0d47a1",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://smkn1pr.queez.id/storage/1749095090-queez-id-192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "https://smkn1pr.queez.id/storage/1749095097-queez-id-512-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}

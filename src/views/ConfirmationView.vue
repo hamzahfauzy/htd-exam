@@ -12,7 +12,7 @@ const token = ref(localStorage.getItem('token'))
 async function handleSubmit() {
   try {
     const { data } = await axios.post(
-      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       savedAnswers.value.filter((data) => data.schedule == route.params.id),
       {
         headers: {

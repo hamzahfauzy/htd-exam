@@ -47,7 +47,7 @@ watch(schedule_status, async () => {
 
 async function getUser() {
   try {
-    const { data } = await axios.get(import.meta.env.VITE_API_URL + '/auth/get-user', {
+    const { data } = await axios.get(window.base_api_url + '/auth/get-user', {
       headers: {
         Authorization: 'Bearer ' + token.value
       }
@@ -61,7 +61,7 @@ async function getUser() {
 async function getSchedule() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL +
+      window.base_api_url +
         '/crud/datatable?table=exam_schedules' +
         (schedule_status.value ? '&filter[schedule_status]=' + schedule_status.value : '') +
         (search.value ? '&search[value]=' + search.value : ''),
@@ -105,6 +105,8 @@ function getButtonTypeAction(label) {
       return 'primary'
     case 'Hasil':
       return 'success'
+    case 'Terkunci':
+      return 'danger'
 
     default:
       return 'secondary'
@@ -126,6 +128,7 @@ function routeButtonAction(schedule, label) {
 }
 
 function logout() {
+  localStorage.removeItem('app_code')
   localStorage.removeItem('token')
   router.replace({ name: 'login' })
 }
@@ -138,7 +141,39 @@ function closeModalScheduleToken() {
   showModalScheduleToken.value = false
 }
 
-function handleSubmitScheduleToken() {
+async function handleSubmitScheduleToken() {
+  if(isLocked(selectedSchedule.value))
+  {
+    try {
+      const { data } = await axios.post(window.base_api_url +'/exam/open-lock',
+        {
+          token: scheduleToken.value
+        },
+        {
+          headers: {
+            Authorization: 'Bearer ' + token.value,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      )
+      if(data.data.status)
+      {
+        localStorage.removeItem('schedule_'+selectedSchedule.value.id)
+        isScheduleTokenSubmitted.value = true
+        isScheduleTokenValid.value = true
+        router.push({ name: 'question', params: { id: selectedSchedule.value.id } })
+      }
+      else
+      {
+        isScheduleTokenSubmitted.value = true
+        isScheduleTokenValid.value = false
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    return
+  }
+
   if (selectedSchedule.value.token === scheduleToken.value) {
     isScheduleTokenSubmitted.value = true
     isScheduleTokenValid.value = true
@@ -147,6 +182,11 @@ function handleSubmitScheduleToken() {
     isScheduleTokenSubmitted.value = true
     isScheduleTokenValid.value = false
   }
+}
+
+function isLocked(schedule)
+{
+  return localStorage.getItem('schedule_'+schedule.id) && schedule.exam_user_status != "DONE"
 }
 </script>
 
@@ -238,9 +278,9 @@ function handleSubmitScheduleToken() {
         <CustomButton
           v-for="(action, index) in schedule.actions"
           :key="index"
-          :text="action.label"
+          :text="isLocked(schedule) ? 'Terkunci' : action.label"
           :disabled="!action.route"
-          :type="getButtonTypeAction(action.label)"
+          :type="getButtonTypeAction(isLocked(schedule) ? 'Terkunci' : action.label)"
           @click="routeButtonAction(schedule, action.label)"
         />
       </div>
@@ -249,5 +289,9 @@ function handleSubmitScheduleToken() {
     <div class="flex flex-col gap-2">
       <CustomButton text="KELUAR" type="danger" @click="logout()" />
     </div>
+
+    <center>
+      Queez Versi 1.2
+    </center>
   </main>
 </template>

@@ -22,11 +22,13 @@ const showModal = ref(false)
 const showModalCamera = ref(false)
 const showModalImage = ref(false)
 const showModalOutofTime = ref(false)
+const initModal = ref(false)
 const user = ref()
 const isDisabled = ref(false)
 const selectedItem = ref()
 const camera = ref()
 const camStarted = ref(false)
+const isOnline = ref(false)
 
 const loadingCamera = () => console.log('Camera is loading and will start any second')
 const started = () => (camStarted.value = true)
@@ -37,11 +39,86 @@ const error = () => (camStarted.value = false)
 const cameraChange = () => console.log('Camera Changed')
 
 onMounted(async () => {
+  const schedule = route.params.id
+  if(localStorage.getItem('schedule_'+schedule))
+  {
+    router.replace({ name: 'home' })
+  }
+
+  localStorage.setItem('status_schedule_'+schedule, 'start')
+
   await getQuestions()
   await getUser()
 
-  loading.value = false
+  const thisLoading = loading
+  Promise.all(Array.from(document.images).map(img => {
+      if (img.complete)
+          if (img.naturalHeight !== 0)
+              return Promise.resolve();
+          else
+              return Promise.reject(img);
+      return new Promise((resolve, reject) => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', () => reject(img));
+      });
+  })).then(() => {
+      console.log('all images loaded successfully');
+      loading.value = false
+      isOnline.value = navigator.onLine
+
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', updateStatus);
+
+      // document.addEventListener('blur',e=>{
+      //   // alert('Tab Changed Blur')
+      //   // locked this session
+      //   locked()
+      // })
+      // document.addEventListener('visibilitychange',e=>{
+      //   // alert('Tab Changed Visibility Change')
+      //   // locked this session
+      //   locked()
+      // })
+
+      window.addEventListener('beforeunload', function (e) {
+        if(route.matched.some(({ path }) => path.startsWith('/question'))){
+            //handle redirect
+            // Cancel the event
+            e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+        }
+      });
+  }, badImg => {
+      console.log('some image failed to load, others may still be loading');
+      console.log('first broken image:', badImg);
+  });
+
+  
 })
+
+function locked()
+{
+  const schedule = route.params.id
+  if(schedule)
+  {
+    localStorage.setItem('schedule_'+schedule, 1)
+    router.replace({ name: 'home' })
+  }
+}
+
+function updateStatus() {
+  isOnline.value = navigator.onLine
+  const schedule = route.params.id
+  const isFinish = localStorage.getItem('status_schedule_'+schedule)
+  if(route.matched.some(({ path }) => path.startsWith('/question'))){
+    if (isOnline.value && isFinish != 'finish') {
+      locked()
+    } else {
+      initModal.value = false
+    }
+  }
+}
 
 const startCam = (question) => {
   selectedItem.value = question
@@ -115,7 +192,7 @@ const snapshot = async () => {
 
 async function getUser() {
   try {
-    const { data } = await axios.get(import.meta.env.VITE_API_URL + '/auth/get-user', {
+    const { data } = await axios.get(window.base_api_url + '/auth/get-user', {
       headers: {
         Authorization: 'Bearer ' + token.value
       }
@@ -146,7 +223,7 @@ function isSavedAnswer(question, answer, isEssay = false) {
 async function postTimer() {
   try {
     const { data } = await axios.post(
-      import.meta.env.VITE_API_URL + '/exam/timer',
+      window.base_api_url + '/exam/timer',
       {
         end: schedule.value.end_at
       },
@@ -165,6 +242,7 @@ async function postTimer() {
 }
 
 function runTimer() {
+  console.log('timer running')
   var x = setInterval(async function () {
     timer.value -= 1
 
@@ -188,7 +266,7 @@ function runTimer() {
 async function getQuestions() {
   try {
     const { data } = await axios.get(
-      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       {
         headers: {
           Authorization: 'Bearer ' + token.value
@@ -233,6 +311,9 @@ function answerQuestion(question, answer, isEssay = false) {
 }
 
 function handleSubmit() {
+  const schedule = route.params.id
+  localStorage.setItem('schedule_'+schedule, 1)
+  localStorage.setItem('status_schedule_'+schedule, 'finish')
   showModal.value = true
 }
 
@@ -250,7 +331,7 @@ async function handleSubmitExam() {
     })
 
     await axios.post(
-      import.meta.env.VITE_API_URL + '/exam/do?schedule_id=' + route.params.id,
+      window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       formData,
       {
         headers: {
@@ -278,9 +359,23 @@ async function handleSubmitExam() {
 function disabledAllInput() {
   isDisabled.value = true
 }
+
+function toTop() {
+  document.body.scrollTop = 0; // For Safari
+  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+}
 </script>
 
 <template>
+  <CustomModal v-if="isOnline && !showModal">
+    <div class="backdrop" style="position: fixed;top: 0;left: 0;height: 100%;background: rgb(243,244,246);width: 100%;"></div>
+    <div class="flex flex-col gap-4" style="position:relative">
+      <div class="flex flex-col gap-2 text-center">
+        <h5 class="text-xl">Harap matikan seluruh koneksi internet.</h5>
+        <h6>Tampilan ini akan hilang setelah perangkat kamu tidak terkoneksi internet.</h6>
+      </div>
+    </div>
+  </CustomModal>
   <CustomModal v-if="showModalOutofTime && !loading">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2 text-center">
@@ -329,11 +424,12 @@ function disabledAllInput() {
   <CustomLoading v-if="loading" />
   <CustomModal v-else-if="!loading && showModal" class="text-center">
     <h3 class="mb-5 text-lg font-normal text-gray-500">
-      Apakah anda yakin ingin mengirimkan jawaban?
+      <!-- Apakah anda yakin ingin mengirimkan jawaban? -->
+      Harap aktifkan koneksi internet sebelum mengirimkan Jawaban.
     </h3>
     <div class="flex gap-3 justify-center">
-      <CustomButton text="TIDAK" type="danger" @click="showModal = false" />
-      <CustomButton text="YAKIN" type="success" @click="handleSubmitExam" />
+      <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
+      <CustomButton text="KIRIM JAWABAN" type="success" @click="handleSubmitExam" v-if="isOnline" />
     </div>
   </CustomModal>
   <main
@@ -341,13 +437,14 @@ function disabledAllInput() {
     class="w-full self-start"
   >
     <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" />
+      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" v-if="isOnline" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
         type="danger"
         :disabled="true"
       />
       <CustomButton text="KIRIM" @click="handleSubmit" />
+      <CustomButton text="<img src='https://smkn1pr.queez.id/storage/1744681538-arrow-up-svgrepo-com.svg' width='20px' height='20px'>" type="secondary" @click="toTop()" />
     </div>
     <div class="flex-col gap-5 flex p-5">
       <div
@@ -356,17 +453,17 @@ function disabledAllInput() {
         :key="question.id"
         :id="'question-' + question.id"
       >
-        <h5 class="text-md" v-html="idx + 1 + '. ' + question.description"></h5>
+        <h5 class="text-md font-medium" v-html="+ (idx + 1) + '. Soal No. '+ (idx + 1)"></h5>
+        <p v-html="question.description"></p>
 
         <div v-if="question.answers.length < 1" class="flex flex-col gap-3">
-          <input
+          <textarea
             v-if="!isSavedAnswer(question, null, true)?.image"
-            :value="isSavedAnswer(question, null, true)?.answer"
             @input="(event) => answerQuestion(question, event.target.value, true)"
             placeholder="Masukkan Jawaban..."
             :disabled="isDisabled"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          />
+          >{{ isSavedAnswer(question, null, true)?.answer }}</textarea>
 
           <CustomButton
             v-if="!isSavedAnswer(question, null, true)?.answer"
@@ -406,7 +503,7 @@ function disabledAllInput() {
             />
             <label
               :for="question.id + '-' + answer.id"
-              class="ms-2 text-sm font-medium"
+              class="ms-2 text-sm"
               v-html="answer.description"
             ></label>
           </div>
