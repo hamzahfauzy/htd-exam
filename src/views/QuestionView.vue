@@ -55,7 +55,7 @@ onMounted(async () => {
     router.replace({ name: 'home' })
   }
 
-  // localStorage.setItem('status_schedule_'+schedule, 'start')
+  localStorage.setItem('status_schedule_'+schedule, 'start')
 
   await getQuestions()
   await getUser()
