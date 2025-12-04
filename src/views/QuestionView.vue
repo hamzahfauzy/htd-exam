@@ -384,6 +384,7 @@ function handleSubmit() {
 async function handleSubmitExam() {
   try {
     saveActivity('sesi_ujian', 'Peserta mengirim jawaban')
+    await syncLogs()
     const formData = new FormData()
 
     savedAnswers.value.map((data) => {
@@ -414,8 +415,6 @@ async function handleSubmitExam() {
         )
       )
     )
-
-    await syncLogs()
     
     localStorage.removeItem(localStoragePendingLogs)
 
@@ -599,7 +598,7 @@ function startAutoSync() {
     class="w-full self-start"
   >
     <div class="sticky top-0 bg-white py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="backToHome()" v-if="isOnline" />
+      <CustomButton text="<" type="secondary" @click="backToHome()" v-if="isOnline" />
       <CustomButton text="LOG" @click="showModalLog = !showModalLog" type="secondary" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
