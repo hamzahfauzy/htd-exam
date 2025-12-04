@@ -416,6 +416,7 @@ async function handleSubmitExam() {
       )
     )
     
+    localStorage.removeItem(localStorageLogs)
     localStorage.removeItem(localStoragePendingLogs)
 
     router.replace({ name: 'finish' })
