@@ -11,9 +11,11 @@ const password = ref('')
 const message = ref('')
 const status = ref(false)
 const isSubmited = ref(false)
+const isSubmiting = ref(false)
 const router = useRouter()
 
 async function login() {
+  isSubmiting.value = true
   try {
     const base_api_url = window.base_api_url.replace('{app_code}', app_code.value)
     const { data } = await axios.post(
@@ -41,11 +43,12 @@ async function login() {
   }
 
   isSubmited.value = true
+  isSubmited.value = false
 }
 </script>
 
 <template>
-  <form class="w-full flex-col gap-4 flex p-5">
+  <form class="w-full flex-col gap-4 flex p-5" method="post" @submit.prevent="login()">
     <img src="https://queez.id/wp-content/uploads/2024/04/cropped-queezid-high-resolution-logo-transparent-1.png" alt="" width="150" class="mx-auto" />
     <h3 class="text-xl text-center font-bold">QUEEZ.ID the easiest exam platform</h3>
     <CustomAlert v-if="isSubmited" :text="message" :type="status ? 'success' : 'danger'" />
@@ -82,6 +85,6 @@ async function login() {
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       />
     </div>
-    <CustomButton text="MASUK" @click="login()" />
+    <CustomButton :is-submit="true" :text="isSubmiting ? 'Silahkan tunggu...' : 'MASUK'" :disabled="isSubmiting" @click="login()" />
   </form>
 </template>

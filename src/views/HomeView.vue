@@ -290,8 +290,8 @@ function isLocked(schedule)
       <CustomButton text="KELUAR" type="danger" @click="logout()" />
     </div>
 
-    <center>
+    <p class="text-center">
       Queez Versi 1.2
-    </center>
+    </p>
   </main>
 </template>

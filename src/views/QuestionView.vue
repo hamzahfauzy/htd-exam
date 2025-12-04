@@ -11,7 +11,8 @@ const route = useRoute()
 const router = useRouter()
 const token = ref(localStorage.getItem('token'))
 const questions = ref()
-const savedAnswers = ref(JSON.parse(localStorage.getItem('savedAnswers')) ?? [])
+const localStorageKey = 'savedAnswers_' + route.params.id
+const savedAnswers = ref(JSON.parse(localStorage.getItem(localStorageKey)) ?? [])
 const loading = ref(true)
 const timer = ref(0)
 const schedule = ref()
@@ -153,7 +154,7 @@ const removeImage = (question) => {
 
   showModalImage.value = false
 
-  localStorage.setItem('savedAnswers', JSON.stringify(savedAnswers.value))
+  localStorage.setItem(localStorageKey, JSON.stringify(savedAnswers.value))
 }
 
 const snapshot = async () => {
@@ -184,7 +185,7 @@ const snapshot = async () => {
       })
     }
 
-    localStorage.setItem('savedAnswers', JSON.stringify(savedAnswers.value))
+    localStorage.setItem(localStorageKey, JSON.stringify(savedAnswers.value))
 
     stopCam()
   }
@@ -307,7 +308,7 @@ function answerQuestion(question, answer, isEssay = false) {
     })
   }
 
-  localStorage.setItem('savedAnswers', JSON.stringify(savedAnswers.value))
+  localStorage.setItem(localStorageKey, JSON.stringify(savedAnswers.value))
 }
 
 function handleSubmit() {
@@ -342,7 +343,7 @@ async function handleSubmitExam() {
     )
 
     localStorage.setItem(
-      'savedAnswers',
+      localStorageKey,
       JSON.stringify(
         savedAnswers.value.filter(
           (data) => data.schedule != route.params.id && data.user == user.value.username

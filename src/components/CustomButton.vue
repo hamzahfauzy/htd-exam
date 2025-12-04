@@ -11,7 +11,11 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
-  }
+  },
+  isSubmit: {
+    type: Boolean,
+    default: false
+  },
 })
 
 function buttonClass() {
@@ -46,6 +50,6 @@ function buttonClass() {
 </script>
 
 <template>
-  <button type="button" :class="buttonClass()" :disabled="disabled" v-html="text">
+  <button :type="isSubmit ? 'submit' : 'button'" :class="buttonClass()" :disabled="disabled" v-html="text">
   </button>
 </template>
