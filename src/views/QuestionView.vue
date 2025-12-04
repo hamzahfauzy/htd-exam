@@ -11,8 +11,16 @@ const route = useRoute()
 const router = useRouter()
 const token = ref(localStorage.getItem('token'))
 const questions = ref()
+let lastWindowState = document.visibilityState;
+let idleTimer;
+let idleLimit = 60000; // 1 menit
+let lastWidth = window.innerWidth;
 const localStorageKey = 'savedAnswers_' + route.params.id
+const localStorageLogs = 'userLogs_' + route.params.id
+const localStoragePendingLogs = 'userPendingLogs_' + route.params.id
 const savedAnswers = ref(JSON.parse(localStorage.getItem(localStorageKey)) ?? [])
+const userLogs = ref(JSON.parse(localStorage.getItem(localStorageLogs)) ?? [])
+const userPendingLogs = ref(JSON.parse(localStorage.getItem(localStoragePendingLogs)) ?? [])
 const loading = ref(true)
 const timer = ref(0)
 const schedule = ref()
@@ -20,6 +28,7 @@ const timerHours = ref('00')
 const timerMinutes = ref('00')
 const timerSeconds = ref('00')
 const showModal = ref(false)
+const showModalLog = ref(false)
 const showModalCamera = ref(false)
 const showModalImage = ref(false)
 const showModalOutofTime = ref(false)
@@ -67,8 +76,59 @@ onMounted(async () => {
       loading.value = false
       isOnline.value = navigator.onLine
 
-      window.addEventListener('online', updateStatus);
-      window.addEventListener('offline', updateStatus);
+      const schedule = route.params.id
+      const isFinish = localStorage.getItem('status_schedule_'+schedule)
+
+      if(isFinish != 'finish')
+      {
+        saveActivity("sesi_ujian", "Peserta masuk ke halaman ujian");
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+
+        // tab keluar
+        window.addEventListener("blur", () => {
+            saveActivity("tab_blur", "Peserta keluar dari halaman ujian");
+        });
+
+        // tab fokus kembali
+        window.addEventListener("focus", () => {
+            saveActivity("tab_focus", "Peserta kembali ke halaman ujian");
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") {
+            saveActivity("minimize_or_switch", "Tampilan browser disembunyikan / minimize / switch tab");
+          } else {
+            saveActivity("visible", "Browser kembali terlihat");
+          }
+        });
+
+        // deteksi close
+        window.addEventListener("beforeunload", () => {
+          saveActivity("exit_attempt", "Peserta mencoba meninggalkan halaman ujian (close/refresh/back)");
+        });
+
+        window.addEventListener("resize", () => {
+          const newWidth = window.innerWidth;
+
+          if (Math.abs(newWidth - lastWidth) > 200) {
+              logActivity("window_resize", "Ukuran window berubah drastis (kemungkinan pindah monitor)");
+          }
+
+          lastWidth = newWidth;
+        });
+
+        window.onload = resetIdle;
+
+        document.onmousemove = resetIdle;
+        document.onkeypress = resetIdle;
+        document.onscroll = resetIdle;
+        document.onclick = resetIdle;
+
+        startAutoSync()
+      }
+
+      
 
       // document.addEventListener('blur',e=>{
       //   // alert('Tab Changed Blur')
@@ -110,15 +170,17 @@ function locked()
 
 function updateStatus() {
   isOnline.value = navigator.onLine
-  const schedule = route.params.id
-  const isFinish = localStorage.getItem('status_schedule_'+schedule)
-  if(route.matched.some(({ path }) => path.startsWith('/question'))){
-    if (isOnline.value && isFinish != 'finish') {
-      locked()
-    } else {
-      initModal.value = false
-    }
-  }
+  initModal.value = !initModal.value
+  saveActivity("network_update", navigator.online ? 'Aplikasi Online' : 'Aplikasi Offline')
+  // const schedule = route.params.id
+  // const isFinish = localStorage.getItem('status_schedule_'+schedule)
+  // if(route.matched.some(({ path }) => path.startsWith('/question'))){
+  //   if (isOnline.value && isFinish != 'finish') {
+  //     locked()
+  //   } else {
+  //     initModal.value = false
+  //   }
+  // }
 }
 
 const startCam = (question) => {
@@ -266,6 +328,7 @@ function runTimer() {
 
 async function getQuestions() {
   try {
+    // window.base_api_url.replace('/api','') + '/json/'+window.app_code+'/' + route.params.id + '-' + user.value.id + '.json'
     const { data } = await axios.get(
       window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       {
@@ -279,8 +342,8 @@ async function getQuestions() {
     if (data.data.is_finished) {
       disabledAllInput()
     } else {
-      await postTimer()
     }
+    await postTimer()
   } catch (e) {
     router.replace({ name: 'home' })
   }
@@ -320,6 +383,7 @@ function handleSubmit() {
 
 async function handleSubmitExam() {
   try {
+    saveActivity('sesi_ujian', 'Peserta mengirim jawaban')
     const formData = new FormData()
 
     savedAnswers.value.map((data) => {
@@ -351,6 +415,10 @@ async function handleSubmitExam() {
       )
     )
 
+    await syncLogs()
+    
+    localStorage.removeItem(localStoragePendingLogs)
+
     router.replace({ name: 'finish' })
   } catch (e) {
     console.error(e)
@@ -365,10 +433,103 @@ function toTop() {
   document.body.scrollTop = 0; // For Safari
   document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
+
+function saveActivity(type, message) {
+  const schedule = route.params.id
+  const isFinish = localStorage.getItem('status_schedule_'+schedule)
+  if(route.matched.some(({ path }) => path.startsWith('/question')) && isFinish != 'finish'){
+    const time = new Date().toISOString()
+    const dataLog = {
+        type,
+        message,
+        time: formatTime(time)
+    }
+    userLogs.value.push(dataLog);
+    userPendingLogs.value.push(dataLog)
+
+    localStorage.setItem(localStorageLogs, JSON.stringify(userLogs.value));
+    localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
+    // if (isOnline.value && isFinish != 'finish') {
+    //   locked()
+    // } else {
+    //   initModal.value = false
+    // }
+  }
+    
+}
+
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+      saveActivity("idle", "Peserta tidak aktif selama 1 menit (AFK)");
+  }, idleLimit);
+}
+
+function formatTime(time) {
+  return new Date(time).toLocaleString();
+}
+
+function backToHome()
+{
+  saveActivity('sesi_ujian', 'Peserta meninggalkan halaman ujian')
+  router.replace({ name: 'home' })
+}
+
+async function syncLogs() {
+    if (userPendingLogs.value.length === 0) return;
+
+    const schedule = route.params.id
+    const isFinish = localStorage.getItem('status_schedule_'+schedule)
+    if(route.matched.some(({ path }) => path.startsWith('/question')) && isFinish != 'finish')
+    {
+      const formData = new FormData()
+      formData.append(`logs`,JSON.stringify(userPendingLogs.value))
+  
+      await axios.post(
+        window.base_api_url + '/exam/log?schedule_id=' + route.params.id,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: 'Bearer ' + token.value
+          }
+        }
+      )
+
+      userPendingLogs.value = []
+      localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
+
+    }
+
+
+    // await fetch("/logs", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(userPendingLogs.value)
+    // });
+
+    // pindahkan pending → archived
+    
+}
+
+function startAutoSync() {
+    const randomInterval = Math.floor(Math.random() * (30000 - 15000)) + 15000;
+    setInterval(syncLogs, randomInterval);
+}
 </script>
 
 <template>
-  <CustomModal v-if="isOnline && !showModal">
+  <CustomModal v-if="showModalLog">
+    <div class="backdrop" style="position: fixed;top: 0;left: 0;height: 100%;background: rgb(243,244,246);width: 100%;"></div>
+    <div class="relative" style="margin-top: 50px;overflow-y: auto;height: calc(100vh - 130px);">
+      <div v-for="(log, index) in userLogs" :key="index" class="log-item" style="margin-bottom: 15px;">
+        <strong>{{ log.type }}</strong> -   
+        <small>{{ log.time }}</small>
+        <p>{{ log.message }}</p>
+      </div>
+    </div>
+  </CustomModal>
+  <CustomModal v-if="false">
     <div class="backdrop" style="position: fixed;top: 0;left: 0;height: 100%;background: rgb(243,244,246);width: 100%;"></div>
     <div class="flex flex-col gap-4" style="position:relative">
       <div class="flex flex-col gap-2 text-center">
@@ -437,8 +598,9 @@ function toTop() {
     v-else-if="!loading && !showModal && !showModalCamera && !showModalImage && !showModalOutofTime"
     class="w-full self-start"
   >
-    <div class="sticky top-0 bg-gray-100 py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="KEMBALI" type="secondary" @click="router.replace({ name: 'home' })" v-if="isOnline" />
+    <div class="sticky top-0 bg-white py-3 flex gap-2 justify-center shadow-sm">
+      <CustomButton text="KEMBALI" type="secondary" @click="backToHome()" v-if="isOnline" />
+      <CustomButton text="LOG" @click="showModalLog = !showModalLog" type="secondary" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
         type="danger"

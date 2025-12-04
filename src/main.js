@@ -10,6 +10,7 @@ window.base_api_url = import.meta.env.VITE_API_PROTOCOL + '://{app_code}' + impo
 if("app_code" in localStorage)
 {
     const app_code = localStorage.getItem('app_code')
+    window.app_code = app_code
     window.base_api_url = window.base_api_url.replace('{app_code}', app_code)
 }
 

@@ -43,7 +43,7 @@ async function login() {
   }
 
   isSubmited.value = true
-  isSubmited.value = false
+  isSubmiting.value = false
 }
 </script>
 
