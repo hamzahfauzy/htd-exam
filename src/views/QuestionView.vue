@@ -434,26 +434,17 @@ function toTop() {
 }
 
 function saveActivity(type, message) {
-  const schedule = route.params.id
-  const isFinish = localStorage.getItem('status_schedule_'+schedule)
-  if(route.matched.some(({ path }) => path.startsWith('/question')) && isFinish != 'finish'){
-    const time = new Date().toISOString()
-    const dataLog = {
-        type,
-        message,
-        time: formatTime(time)
-    }
-    userLogs.value.push(dataLog);
-    userPendingLogs.value.push(dataLog)
-
-    localStorage.setItem(localStorageLogs, JSON.stringify(userLogs.value));
-    localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
-    // if (isOnline.value && isFinish != 'finish') {
-    //   locked()
-    // } else {
-    //   initModal.value = false
-    // }
+  const time = new Date().toISOString()
+  const dataLog = {
+      type,
+      message,
+      time: formatTime(time)
   }
+  userLogs.value.push(dataLog);
+  userPendingLogs.value.push(dataLog)
+
+  localStorage.setItem(localStorageLogs, JSON.stringify(userLogs.value));
+  localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
     
 }
 
