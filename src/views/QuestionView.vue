@@ -55,7 +55,7 @@ onMounted(async () => {
     router.replace({ name: 'home' })
   }
 
-  localStorage.setItem('status_schedule_'+schedule, 'start')
+  // localStorage.setItem('status_schedule_'+schedule, 'start')
 
   await getQuestions()
   await getUser()
@@ -77,7 +77,7 @@ onMounted(async () => {
       isOnline.value = navigator.onLine
 
       const schedule = route.params.id
-      const isFinish = localStorage.getItem('status_schedule_'+schedule)
+      // const isFinish = localStorage.getItem('status_schedule_'+schedule)
 
       if(isFinish != 'finish')
       {
@@ -173,7 +173,7 @@ function updateStatus() {
   initModal.value = !initModal.value
   saveActivity("network_update", navigator.online ? 'Aplikasi Online' : 'Aplikasi Offline')
   // const schedule = route.params.id
-  // const isFinish = localStorage.getItem('status_schedule_'+schedule)
+  const isFinish = localStorage.getItem('status_schedule_'+schedule)
   // if(route.matched.some(({ path }) => path.startsWith('/question'))){
   //   if (isOnline.value && isFinish != 'finish') {
   //     locked()
@@ -377,7 +377,7 @@ function answerQuestion(question, answer, isEssay = false) {
 function handleSubmit() {
   const schedule = route.params.id
   // localStorage.setItem('schedule_'+schedule, 1)
-  // localStorage.setItem('status_schedule_'+schedule, 'finish')
+  localStorage.setItem('status_schedule_'+schedule, 'finish')
   showModal.value = true
 }
 
@@ -477,28 +477,22 @@ function backToHome()
 async function syncLogs() {
     if (userPendingLogs.value.length === 0) return;
 
-    const schedule = route.params.id
-    const isFinish = localStorage.getItem('status_schedule_'+schedule)
-    if(route.matched.some(({ path }) => path.startsWith('/question')) && isFinish != 'finish')
-    {
-      const formData = new FormData()
-      formData.append(`logs`,JSON.stringify(userPendingLogs.value))
-  
-      await axios.post(
-        window.base_api_url + '/exam/log?schedule_id=' + route.params.id,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: 'Bearer ' + token.value
-          }
+    const formData = new FormData()
+    formData.append(`logs`,JSON.stringify(userPendingLogs.value))
+
+    await axios.post(
+      window.base_api_url + '/exam/log?schedule_id=' + route.params.id,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: 'Bearer ' + token.value
         }
-      )
+      }
+    )
 
-      userPendingLogs.value = []
-      localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
-
-    }
+    userPendingLogs.value = []
+    localStorage.setItem(localStoragePendingLogs, JSON.stringify(userPendingLogs.value));
 
 
     // await fetch("/logs", {
@@ -512,8 +506,12 @@ async function syncLogs() {
 }
 
 function startAutoSync() {
+  const schedule = route.params.id
+  const isFinish = localStorage.getItem('status_schedule_'+schedule)
+  if(route.matched.some(({ path }) => path.startsWith('/question')) && isFinish != 'finish'){
     const randomInterval = Math.floor(Math.random() * (30000 - 15000)) + 15000;
     setInterval(syncLogs, randomInterval);
+  }
 }
 </script>
 
