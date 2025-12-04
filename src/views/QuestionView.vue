@@ -377,7 +377,7 @@ function answerQuestion(question, answer, isEssay = false) {
 function handleSubmit() {
   const schedule = route.params.id
   // localStorage.setItem('schedule_'+schedule, 1)
-  localStorage.setItem('status_schedule_'+schedule, 'finish')
+  // localStorage.setItem('status_schedule_'+schedule, 'finish')
   showModal.value = true
 }
 
