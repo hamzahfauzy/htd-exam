@@ -77,7 +77,7 @@ onMounted(async () => {
       isOnline.value = navigator.onLine
 
       const schedule = route.params.id
-      // const isFinish = localStorage.getItem('status_schedule_'+schedule)
+      const isFinish = localStorage.getItem('status_schedule_'+schedule)
 
       if(isFinish != 'finish')
       {
