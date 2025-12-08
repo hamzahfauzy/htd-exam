@@ -38,12 +38,23 @@ async function login() {
     router.replace({ name: 'home' })
   } catch (error) {
     console.log(error)
-    message.value = error.response.data.message
+    if(error?.response?.data)
+    {
+      message.value = error.response.data.message
+    }
+    else
+    {
+      message.value = "Unknown error"
+    }
     status.value = false
   }
 
   isSubmited.value = true
   isSubmiting.value = false
+
+  setTimeout( e => {
+    isSubmited.value = false
+  }, 5000)
 }
 </script>
 
@@ -85,6 +96,6 @@ async function login() {
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       />
     </div>
-    <CustomButton :is-submit="true" :text="isSubmiting ? 'Silahkan tunggu...' : 'MASUK'" :disabled="isSubmiting" @click="login()" />
+    <CustomButton :is-submit="true" :text="isSubmiting ? 'Silahkan tunggu...' : 'MASUK'" :disabled="isSubmiting" />
   </form>
 </template>
