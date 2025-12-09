@@ -112,7 +112,7 @@ onMounted(async () => {
           const newWidth = window.innerWidth;
 
           if (Math.abs(newWidth - lastWidth) > 200) {
-              logActivity("window_resize", "Ukuran window berubah drastis (kemungkinan pindah monitor)");
+              saveActivity("window_resize", "Ukuran window berubah drastis (kemungkinan pindah monitor)");
           }
 
           lastWidth = newWidth;
