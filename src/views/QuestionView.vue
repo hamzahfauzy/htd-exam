@@ -596,7 +596,7 @@ function startAutoSync() {
     <span>{{ errMsg }}</span>
     <div class="flex gap-3 justify-center">
       <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
-      <CustomButton :text="isSent ? 'KIRIM JAWABAN' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" v-if="isOnline" />
+      <CustomButton :text="!isSent ? 'KIRIM JAWABAN' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" v-if="isOnline" />
     </div>
   </CustomModal>
   <main
