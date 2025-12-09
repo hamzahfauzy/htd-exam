@@ -392,6 +392,7 @@ function handleSubmit() {
 }
 
 async function handleSubmitExam() {
+  if(isSent.value) return
   isSent.value = true
   try {
     saveActivity('sesi_ujian', 'Peserta mengirim jawaban')
