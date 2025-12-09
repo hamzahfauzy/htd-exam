@@ -17,6 +17,7 @@ let idleLimit = 60000; // 1 menit
 let lastWidth = window.innerWidth;
 let lastHeight = window.innerHeight;
 const isSent = ref(false)
+const errMsg = ref('')
 const localStorageKey = 'savedAnswers_' + route.params.id
 const localStorageLogs = 'userLogs_' + route.params.id
 const localStoragePendingLogs = 'userPendingLogs_' + route.params.id
@@ -433,6 +434,7 @@ async function handleSubmitExam() {
   } catch (e) {
     console.error(e)
     isSent.value = false
+    errMsg.value = e
   }
 }
 
@@ -589,6 +591,7 @@ function startAutoSync() {
       <!-- Apakah anda yakin ingin mengirimkan jawaban? -->
       Harap aktifkan koneksi internet sebelum mengirimkan Jawaban.
     </h3>
+    <span>{{ errMsg }}</span>
     <div class="flex gap-3 justify-center">
       <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
       <CustomButton :text="isSent ? 'KIRIM JAWABAN' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" v-if="isOnline" />
