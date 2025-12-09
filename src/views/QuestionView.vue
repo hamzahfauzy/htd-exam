@@ -407,6 +407,8 @@ async function handleSubmitExam() {
       }
     })
 
+    errMsg.value = formData.values()
+
     await axios.post(
       window.base_api_url + '/exam/do?schedule_id=' + route.params.id,
       formData,
