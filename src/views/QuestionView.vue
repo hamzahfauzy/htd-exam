@@ -15,6 +15,7 @@ let lastWindowState = document.visibilityState;
 let idleTimer;
 let idleLimit = 60000; // 1 menit
 let lastWidth = window.innerWidth;
+let lastHeight = window.innerHeight;
 const localStorageKey = 'savedAnswers_' + route.params.id
 const localStorageLogs = 'userLogs_' + route.params.id
 const localStoragePendingLogs = 'userPendingLogs_' + route.params.id
@@ -110,10 +111,17 @@ onMounted(async () => {
 
         window.addEventListener("resize", () => {
           const newWidth = window.innerWidth;
+          const newHeight = window.innerHeight;
 
           if (Math.abs(newWidth - lastWidth) > 200) {
-              saveActivity("window_resize", "Ukuran window berubah drastis (kemungkinan pindah monitor)");
+              saveActivity("window_resize", "Ukuran window berubah (kemungkinan pindah monitor)");
           }
+
+          // deteksi perubahan tinggi drastis (ganti monitor vertikal, taskbar dibuka, atau window snap)
+          if (Math.abs(newHeight - lastHeight) > 150) {
+              saveActivity("window_resize", "Tinggi window berubah (kemungkinan pindah monitor / resize vertikal)");
+          }
+
 
           lastWidth = newWidth;
         });
