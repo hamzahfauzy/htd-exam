@@ -16,6 +16,7 @@ let idleTimer;
 let idleLimit = 60000; // 1 menit
 let lastWidth = window.innerWidth;
 let lastHeight = window.innerHeight;
+const isSent = ref(false)
 const localStorageKey = 'savedAnswers_' + route.params.id
 const localStorageLogs = 'userLogs_' + route.params.id
 const localStoragePendingLogs = 'userPendingLogs_' + route.params.id
@@ -390,6 +391,7 @@ function handleSubmit() {
 }
 
 async function handleSubmitExam() {
+  isSent.value = true
   try {
     saveActivity('sesi_ujian', 'Peserta mengirim jawaban')
     await syncLogs()
@@ -430,6 +432,7 @@ async function handleSubmitExam() {
     router.replace({ name: 'finish' })
   } catch (e) {
     console.error(e)
+    isSent.value = false
   }
 }
 
@@ -542,7 +545,7 @@ function startAutoSync() {
         <h6>Klik OK untuk mengirim Jawaban</h6>
       </div>
       <div class="flex gap-3 justify-center">
-        <CustomButton text="OK" type="success" @click="handleSubmitExam" />
+        <CustomButton :text="isSent ? 'OK' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" />
       </div>
     </div>
   </CustomModal>
@@ -588,7 +591,7 @@ function startAutoSync() {
     </h3>
     <div class="flex gap-3 justify-center">
       <!-- <CustomButton text="TIDAK" type="danger" @click="showModal = false" /> -->
-      <CustomButton text="KIRIM JAWABAN" type="success" @click="handleSubmitExam" v-if="isOnline" />
+      <CustomButton :text="isSent ? 'KIRIM JAWABAN' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" v-if="isOnline" />
     </div>
   </CustomModal>
   <main
