@@ -549,7 +549,7 @@ function startAutoSync() {
         <h6>Klik OK untuk mengirim Jawaban</h6>
       </div>
       <div class="flex gap-3 justify-center">
-        <CustomButton :text="isSent ? 'OK' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" />
+        <CustomButton :text="!isSent ? 'OK' : 'SEDANG MENGIRIM...'" type="success" @click="handleSubmitExam" />
       </div>
     </div>
   </CustomModal>
