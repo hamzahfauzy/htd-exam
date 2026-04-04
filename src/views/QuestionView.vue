@@ -385,6 +385,11 @@ function answerQuestion(question, answer, isEssay = false) {
 }
 
 function handleSubmit() {
+  if(parseInt(timerMinutes.value) >= 5)
+  {
+    alert('Jawaban tidak bisa dikirim sebelum sisa waktu maksimal 5 menit')
+    return
+  }
   const schedule = route.params.id
   // localStorage.setItem('schedule_'+schedule, 1)
   localStorage.setItem('status_schedule_'+schedule, 'finish')
@@ -392,6 +397,11 @@ function handleSubmit() {
 }
 
 async function handleSubmitExam() {
+  if(parseInt(timerMinutes.value) >= 5)
+  {
+    alert('Jawaban tidak bisa dikirim sebelum sisa waktu maksimal 5 menit')
+    return
+  }
   if(isSent.value) return
   isSent.value = true
   try {
