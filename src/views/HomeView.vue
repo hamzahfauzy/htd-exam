@@ -39,6 +39,10 @@ onMounted(async () => {
   await getUser()
   await getSchedule()
   loading.value = false
+
+  if (typeof Android !== "undefined") {
+    Android.stopExam();
+  }
 })
 
 watch(schedule_status, async () => {

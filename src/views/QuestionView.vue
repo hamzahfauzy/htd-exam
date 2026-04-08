@@ -76,6 +76,9 @@ onMounted(async () => {
       });
   })).then(() => {
       console.log('all images loaded successfully');
+      if (typeof Android !== "undefined") {
+        Android.startExam();
+      }
       loading.value = false
       isOnline.value = navigator.onLine
 
