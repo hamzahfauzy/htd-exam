@@ -616,7 +616,7 @@ function startAutoSync() {
     class="w-full self-start"
   >
     <div class="sticky top-0 bg-white py-3 flex gap-2 justify-center shadow-sm">
-      <CustomButton text="<" type="secondary" @click="backToHome()" v-if="isOnline" />
+      <!-- <CustomButton text="<" type="secondary" @click="backToHome()" v-if="isOnline" /> -->
       <CustomButton text="LOG" @click="showModalLog = !showModalLog" type="secondary" />
       <CustomButton
         :text="timerHours + ':' + timerMinutes + ':' + timerSeconds"
