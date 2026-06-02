@@ -36,6 +36,11 @@ const isScheduleTokenValid = ref(false)
 const isScheduleTokenSubmitted = ref(false)
 
 onMounted(async () => {
+  if(!window.app_code)
+  {
+    logout()
+    return    
+  }
   await getUser()
   await getSchedule()
   loading.value = false
