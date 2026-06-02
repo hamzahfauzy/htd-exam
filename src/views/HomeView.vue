@@ -41,12 +41,16 @@ onMounted(async () => {
     logout()
     return    
   }
-  await getUser()
-  await getSchedule()
-  loading.value = false
-
-  if (typeof Android !== "undefined") {
-    Android.stopExam();
+  try {
+    await getUser()
+    await getSchedule()
+    loading.value = false
+  
+    if (typeof Android !== "undefined") {
+      Android.stopExam();
+    }
+  } catch (error) {
+    console.log(error)
   }
 })
 
@@ -64,9 +68,11 @@ async function getUser() {
     user.value = data.data
   } catch (e) {
     console.error(e)
+    console.log(e.status)
     if(e.status == 403)
     {
       logout()
+      return
     }
   }
 }
