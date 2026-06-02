@@ -59,6 +59,10 @@ async function getUser() {
     user.value = data.data
   } catch (e) {
     console.error(e)
+    if(e.status == 403)
+    {
+      logout()
+    }
   }
 }
 
