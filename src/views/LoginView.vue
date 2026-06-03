@@ -32,10 +32,11 @@ async function login() {
     )
     message.value = data.message
     status.value = true
+    window.app_code = app_code.value
     window.base_api_url = window.base_api_url.replace('{app_code}', app_code.value)
     localStorage.setItem('app_code', app_code.value)
     localStorage.setItem('token', data.data.token)
-    router.replace({ name: 'home' })
+    router.push({ name: 'home' })
   } catch (error) {
     console.log(error)
     if(error?.response?.data)
